@@ -1,4 +1,4 @@
-# Lightbar
+# PS4 Lightbar Screen Sync
 
 Your screen's colors, in your hands.
 
