@@ -1,6 +1,9 @@
 import unittest
+import colorsys
+import contextlib
+import io
 
-from lightbar import fade, screen_color
+from lightbar import fade, screen_color, options
 
 
 def pixels(*colors):
@@ -44,6 +47,36 @@ class ColorTests(unittest.TestCase):
 
     def test_neutral_scene_and_brightness(self):
         self.assertEqual(screen_color(pixels((200, 200, 200)), 1, 1, 0.5), (100, 100, 100))
+
+    def test_saturation_boost_keeps_hue_and_value(self):
+        result = screen_color(pixels((200, 100, 100)), 1, 1, 1, 1.2)
+        self.assertEqual(result, (200, 80, 80))
+        hue, saturation, value = colorsys.rgb_to_hsv(*result)
+        self.assertEqual((hue, value), (0, 200))
+        self.assertAlmostEqual(saturation, 0.6)
+
+    def test_saturation_zero_desaturates_and_boost_clamps(self):
+        data = pixels((200, 100, 100))
+        self.assertEqual(screen_color(data, 1, 1, 1, 0), (200, 200, 200))
+        self.assertEqual(screen_color(data, 1, 1, 1, 3), (200, 0, 0))
+
+    def test_saturation_preserves_black_and_neutral_grays(self):
+        for color in ((0, 0, 0), (64, 64, 64), (255, 255, 255)):
+            with self.subTest(color=color):
+                self.assertEqual(screen_color(pixels(color), 1, 1, 1, 3), color)
+
+    def test_boost_does_not_change_dominant_group(self):
+        data = pixels(*([(64, 64, 64)] * 24 + [(200, 100, 100)] * 8))
+        self.assertEqual(screen_color(data, 32, 1, 1, 3), (64, 64, 64))
+
+    def test_saturation_cli_validation(self):
+        self.assertEqual(options([]).saturation, 1.0)
+        self.assertEqual(options(['--saturation', '1.2']).saturation, 1.2)
+        for value in ('-1', '3.1', 'nan', 'inf'):
+            with self.subTest(value=value), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as error:
+                    options(['--saturation', value])
+                self.assertEqual(error.exception.code, 2)
 
     def test_fade_independent_of_frame_rate(self):
         target = (255, 80, 20)

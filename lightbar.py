@@ -8,7 +8,7 @@ import sys
 import time
 
 
-def screen_color(bgra, width, height, brightness=0.65):
+def screen_color(bgra, width, height, brightness=0.65, saturation=1.0):
     """Choose the most frequent color group, including black and gray shades."""
     # Twelve hue groups and eight neutral brightness groups. Every sample gets
     # one equal vote, so a bright menu cannot outweigh a larger dark image.
@@ -19,11 +19,11 @@ def screen_color(bgra, width, height, brightness=0.65):
             x = min(width - 1, int((gx + 0.5) * width / min(32, width)))
             offset = (y * width + x) * 4
             b, g, r = bgra[offset:offset + 3]
-            hue, saturation, value = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            hue, pixel_saturation, value = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
             if value < 0.04:
                 index = 12
                 r = g = b = 0
-            elif saturation <= 0.2:
+            elif pixel_saturation <= 0.2:
                 index = 12 + min(7, int(value * 8))
             else:
                 index = min(11, int(hue * 12))
@@ -34,7 +34,14 @@ def screen_color(bgra, width, height, brightness=0.65):
     dominant = max(bins, key=lambda bucket: bucket[0])
     if not dominant[0]:
         return (0, 0, 0)
-    return tuple(round(channel / dominant[0] * brightness) for channel in dominant[1:])
+    rgb = tuple(channel / dominant[0] for channel in dominant[1:])
+    if saturation != 1.0:
+        # Adjust the selected color only. Preserve hue and HSV value, including
+        # zero saturation for neutral grays and zero value for black.
+        hue, amount, value = colorsys.rgb_to_hsv(*(channel / 255 for channel in rgb))
+        rgb = tuple(channel * 255 for channel in colorsys.hsv_to_rgb(
+            hue, min(1.0, amount * saturation), value))
+    return tuple(round(channel * brightness) for channel in rgb)
 
 
 def fade(previous, target, elapsed, fade_ms):
@@ -45,19 +52,22 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.5')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')
     parser.add_argument('--monitor', type=int, default=1, help='MSS monitor index (default: 1)')
     parser.add_argument('--fps', type=int, default=15, help='updates per second, 1–60 (default: 15)')
     parser.add_argument('--brightness', type=float, default=0.65, help='brightness, 0–1 (default: 0.65)')
+    parser.add_argument('--saturation', type=float, default=1.0, help='saturation multiplier, 0–3; 1 preserves colors (default: 1)')
     parser.add_argument('--fade-ms', type=float, default=180, help='fade time constant, 0–2000 (default: 180)')
     args = parser.parse_args(argv)
     if not 1 <= args.fps <= 60:
         parser.error('--fps must be between 1 and 60')
     if not 0 <= args.brightness <= 1:
         parser.error('--brightness must be between 0 and 1')
+    if not 0 <= args.saturation <= 3:
+        parser.error('--saturation must be between 0 and 3')
     if not 0 <= args.fade_ms <= 2000:
         parser.error('--fade-ms must be between 0 and 2000')
     return args
@@ -127,7 +137,7 @@ def main(argv=None):
                     if not pad.attached():
                         raise RuntimeError('Controller disconnected. Reconnect it and restart Lightbar.')
                 frame = capture.grab(region)
-                target = screen_color(frame.bgra, frame.width, frame.height, args.brightness)
+                target = screen_color(frame.bgra, frame.width, frame.height, args.brightness, args.saturation)
                 now = time.monotonic()
                 current = fade(current, target, now - last, args.fade_ms)
                 last = now
