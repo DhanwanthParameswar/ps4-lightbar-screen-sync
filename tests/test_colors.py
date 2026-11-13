@@ -70,7 +70,7 @@ class ColorTests(unittest.TestCase):
         self.assertEqual(screen_color(data, 32, 1, 1, 3), (64, 64, 64))
 
     def test_saturation_cli_validation(self):
-        self.assertEqual(options([]).saturation, 1.0)
+        self.assertEqual(options([]).saturation, 1.2)
         self.assertEqual(options(['--saturation', '1.2']).saturation, 1.2)
         for value in ('-1', '3.1', 'nan', 'inf'):
             with self.subTest(value=value), contextlib.redirect_stderr(io.StringIO()):

@@ -52,14 +52,14 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.5')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.6')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')
     parser.add_argument('--monitor', type=int, default=1, help='MSS monitor index (default: 1)')
     parser.add_argument('--fps', type=int, default=15, help='updates per second, 1–60 (default: 15)')
     parser.add_argument('--brightness', type=float, default=0.65, help='brightness, 0–1 (default: 0.65)')
-    parser.add_argument('--saturation', type=float, default=1.0, help='saturation multiplier, 0–3; 1 preserves colors (default: 1)')
+    parser.add_argument('--saturation', type=float, default=1.2, help='saturation multiplier, 0–3; 1 preserves colors (default: 1.2)')
     parser.add_argument('--fade-ms', type=float, default=180, help='fade time constant, 0–2000 (default: 180)')
     args = parser.parse_args(argv)
     if not 1 <= args.fps <= 60:

@@ -13,7 +13,7 @@ Warm sunsets glow orange. Underwater scenes glow blue. Dark scenes fade out. Thi
 - Installable `ds4sync` CLI, two dependencies, no browser shell, server, accounts, or telemetry.
 - Dominant color from a grid of up to 576 sampled pixels. Every pixel gets an equal vote across hue and neutral brightness groups, including black and gray. Only the winning group is averaged, keeping small bright menus from overriding a larger dark image.
 - Time-based smoothing, adjustable brightness, 15 updates/second by default.
-- Optional saturation control applied after choosing the dominant color. `--saturation 1.2` boosts saturation by 20%, `1` preserves it (the default), and `0` removes it. Range: 0–3, clamped to full saturation. Black stays off and neutral grays remain neutral. Hue and HSV value are preserved; perceived brightness can vary with saturation.
+- Saturation control applied after choosing the dominant color. The default, `1.2`, boosts saturation by 20%; `--saturation 1` preserves it and `0` removes it. Range: 0–3, clamped to full saturation. Black stays off and neutral grays remain neutral. Hue and HSV value are preserved; perceived brightness can vary with saturation.
 - Reasserts stable LED colors on each update, subject to SDL's write rate limit, to recover from external color overrides. Other apps can still cause brief flashes; this does not give exclusive control of the light bar.
 - SDL handles controller transport; USB is the recommended first hardware test. Bluetooth still needs validation.
 - Preview mode prints RGB hex colors without touching a controller.
