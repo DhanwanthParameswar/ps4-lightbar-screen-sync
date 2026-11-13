@@ -50,7 +50,7 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.1')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')
@@ -68,6 +68,20 @@ def options(argv=None):
     return args
 
 
+def controller_names(controller):
+    """Read names from opened devices, including pygame-ce before 2.5.9."""
+    names = {}
+    for index in range(controller.get_count()):
+        if not controller.is_controller(index):
+            continue
+        device = controller.Controller(index)
+        try:
+            names[index] = device.name or ''
+        finally:
+            device.quit()
+    return names
+
+
 def main(argv=None):
     args = options(argv)
     os.environ.setdefault('PYGAME_HIDE_SUPPORT_PROMPT', '1')
@@ -82,17 +96,17 @@ def main(argv=None):
 
             pygame.display.init()
             controller.init()
-            available = [i for i in range(controller.get_count()) if controller.is_controller(i)]
+            available = controller_names(controller)
             if args.list:
                 for i in available:
-                    print(f'{i}: {controller.name_forindex(i)}')
+                    print(f'{i}: {available[i]}')
                 if not available:
                     print('No SDL controllers found. Connect a DualShock 4 and try again.')
                 return 0
             index = args.controller
             if index is None:
                 index = next((i for i in available if any(
-                    name in (controller.name_forindex(i) or '').lower()
+                    name in available[i].lower()
                     for name in ('ps4', 'dualshock', 'dual shock', 'wireless controller')
                 )), None)
             if index not in available:
