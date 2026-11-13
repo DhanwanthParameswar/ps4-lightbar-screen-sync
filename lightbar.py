@@ -52,7 +52,7 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.6')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.7')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')
@@ -92,6 +92,11 @@ def main(argv=None):
     os.environ.setdefault('PYGAME_HIDE_SUPPORT_PROMPT', '1')
     os.environ.setdefault('SDL_JOYSTICK_HIDAPI_PS4', '1')
     os.environ.setdefault('SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS', '1')
+    if sys.platform == 'darwin':
+        # This CLI needs neither Cocoa windows nor Apple's foreground-scoped
+        # GameController light control. Keep controller output on the HID path.
+        os.environ.setdefault('SDL_JOYSTICK_MFI', '0')
+        os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
     pygame = None
     pad = None
     try:

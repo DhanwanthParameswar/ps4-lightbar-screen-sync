@@ -64,6 +64,7 @@ Use `--monitor 2` for another monitor. `--help` lists all options. Ctrl+C stops 
 
 - **Computer use:** this reads a computer display and controls a controller connected to it. It does not run on a stock PS4 or capture a console's HDMI output. A console setup would need a capture device and separate controller-control investigation.
 - **macOS:** allow Screen Recording for the terminal or host app in System Settings → Privacy & Security, then restart it if necessary.
+- **macOS focus changes:** the CLI defaults to SDL's dummy video driver and disables SDL's Apple GameController/MFI backend, while enabling its PS4 HID backend. This avoids unnecessary Cocoa/Apple controller initialization. It is a candidate mitigation for macOS 27 focus-related LED resets; physical confirmation is still needed. Explicit environment overrides are respected.
 - **Windows / Linux:** capture and controller access need testing. Linux MSS capture generally needs X11; Wayland may require a different capture backend. Device permissions can also affect controller access.
 - **Other apps:** Steam Input, DS4Windows, and games may write their own LED colors and compete with Lightbar. Test with those LED controls disabled or those apps closed.
 - **Protected content:** DRM video or exclusive fullscreen capture may be black or unavailable.
