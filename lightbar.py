@@ -54,7 +54,7 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.3')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')
@@ -141,9 +141,11 @@ def main(argv=None):
                 current = fade(current, target, now - last, args.fade_ms)
                 last = now
                 rgb = tuple(round(channel) for channel in current)
+                # Reassert even a stable color if another app overwrites the LED.
+                # SDL rate-limits identical LED writes internally.
+                if pad and not pad.set_led(rgb):
+                    raise RuntimeError('Light bar update failed. Try reconnecting the controller over USB.')
                 if rgb != last_sent:
-                    if pad and not pad.set_led(rgb):
-                        raise RuntimeError('Light bar update failed. Try reconnecting the controller over USB.')
                     if args.preview:
                         print('#%02x%02x%02x' % rgb, flush=True)
                     last_sent = rgb

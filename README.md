@@ -14,6 +14,7 @@ Warm sunsets glow orange. Underwater scenes glow blue. Dark scenes fade out. Thi
 - Dominant hue from a grid of up to 576 sampled pixels, ignoring near-black letterbox bars.
 - Mostly black scenes dim the output so small bright UI elements cannot drive full brightness. Up to 50% dark coverage is tolerated for letterboxing before dimming; this is a heuristic, not automatic letterbox detection.
 - Time-based smoothing, adjustable brightness, 15 updates/second by default.
+- Reasserts stable LED colors on each update, subject to SDL's write rate limit, to recover from external color overrides. Other apps can still cause brief flashes; this does not give exclusive control of the light bar.
 - SDL handles controller transport; USB is the recommended first hardware test. Bluetooth still needs validation.
 - Preview mode prints RGB hex colors without touching a controller.
 - Captured frames stay in memory. Nothing records or uploads them.
