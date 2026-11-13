@@ -11,16 +11,29 @@ class ColorTests(unittest.TestCase):
     def test_black_scene_turns_off(self):
         self.assertEqual(screen_color(pixels((0, 0, 0)), 1, 1), (0, 0, 0))
 
-    def test_letterbox_does_not_dilute_red(self):
-        self.assertEqual(screen_color(pixels((0, 0, 0), (255, 0, 0)), 2, 1, 1), (255, 0, 0))
+    def test_red_majority_with_black_letterbox_stays_red(self):
+        data = pixels((0, 0, 0), (255, 0, 0), (255, 0, 0))
+        self.assertEqual(screen_color(data, 3, 1, 1), (255, 0, 0))
 
     def test_small_white_element_on_black_does_not_produce_full_white(self):
         data = pixels(*([(0, 0, 0)] * 31 + [(255, 255, 255)]))
-        self.assertEqual(screen_color(data, 32, 1, 1), (16, 16, 16))
+        self.assertEqual(screen_color(data, 32, 1, 1), (0, 0, 0))
 
-    def test_small_color_on_black_is_dimmed_without_changing_hue(self):
+    def test_black_majority_beats_small_colored_element(self):
         data = pixels(*([(0, 0, 0)] * 31 + [(255, 0, 0)]))
-        self.assertEqual(screen_color(data, 32, 1, 1), (16, 0, 0))
+        self.assertEqual(screen_color(data, 32, 1, 1), (0, 0, 0))
+
+    def test_gray_majority_beats_bright_white_and_colored_ui(self):
+        data = pixels(*([(64, 64, 64)] * 24 + [(255, 255, 255)] * 4 + [(255, 0, 0)] * 4))
+        self.assertEqual(screen_color(data, 32, 1, 1), (64, 64, 64))
+
+    def test_white_majority_is_still_white(self):
+        data = pixels(*([(255, 255, 255)] * 24 + [(0, 0, 0)] * 8))
+        self.assertEqual(screen_color(data, 32, 1, 1), (255, 255, 255))
+
+    def test_dim_color_majority_beats_small_bright_color(self):
+        data = pixels(*([(80, 0, 0)] * 24 + [(0, 255, 0)] * 8))
+        self.assertEqual(screen_color(data, 32, 1, 1), (80, 0, 0))
 
     def test_near_black_scene_turns_off(self):
         self.assertEqual(screen_color(pixels((5, 5, 5)), 1, 1, 1), (0, 0, 0))
