@@ -12,6 +12,7 @@ Warm sunsets glow orange. Underwater scenes glow blue. Dark scenes fade out. Thi
 
 - Installable `ds4sync` CLI, two dependencies, no browser shell, server, accounts, or telemetry.
 - Dominant hue from a grid of up to 576 sampled pixels, ignoring near-black letterbox bars.
+- Mostly black scenes dim the output so small bright UI elements cannot drive full brightness. Up to 50% dark coverage is tolerated for letterboxing before dimming; this is a heuristic, not automatic letterbox detection.
 - Time-based smoothing, adjustable brightness, 15 updates/second by default.
 - SDL handles controller transport; USB is the recommended first hardware test. Bluetooth still needs validation.
 - Preview mode prints RGB hex colors without touching a controller.

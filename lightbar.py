@@ -13,6 +13,7 @@ def screen_color(bgra, width, height, brightness=0.65):
     bins = [[0, 0, 0, 0] for _ in range(12)]
     total = [0, 0, 0]
     count = 0
+    sampled = min(18, height) * min(32, width)
     for gy in range(min(18, height)):
         y = min(height - 1, int((gy + 0.5) * height / min(18, height)))
         for gx in range(min(32, width)):
@@ -20,7 +21,7 @@ def screen_color(bgra, width, height, brightness=0.65):
             offset = (y * width + x) * 4
             b, g, r = bgra[offset:offset + 3]
             hue, saturation, value = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
-            # Ignore letterbox bars while retaining a truly black scene as black.
+            # Exclude near-black from hue selection, but track its screen coverage.
             if value < 0.04:
                 continue
             count += 1
@@ -39,7 +40,10 @@ def screen_color(bgra, width, height, brightness=0.65):
         rgb = [channel / dominant[0] for channel in dominant[1:]]
     else:
         rgb = [channel / count for channel in total]
-    return tuple(round(channel * brightness) for channel in rgb)
+    # A tiny bright UI element must not illuminate an otherwise black screen.
+    # Allow up to 50% dark coverage for letterboxing before dimming the result.
+    coverage = min(1.0, 2 * count / sampled)
+    return tuple(round(channel * brightness * coverage) for channel in rgb)
 
 
 def fade(previous, target, elapsed, fade_ms):
@@ -50,7 +54,7 @@ def fade(previous, target, elapsed, fade_ms):
 
 def options(argv=None):
     parser = argparse.ArgumentParser(prog='ds4sync', description=__doc__)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.1.2')
     parser.add_argument('--preview', action='store_true', help='print colors without opening a controller')
     parser.add_argument('--list', action='store_true', help='list controller indexes and exit')
     parser.add_argument('--controller', type=int, help='explicit SDL controller index; defaults to a PS4 controller')

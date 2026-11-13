@@ -14,6 +14,17 @@ class ColorTests(unittest.TestCase):
     def test_letterbox_does_not_dilute_red(self):
         self.assertEqual(screen_color(pixels((0, 0, 0), (255, 0, 0)), 2, 1, 1), (255, 0, 0))
 
+    def test_small_white_element_on_black_does_not_produce_full_white(self):
+        data = pixels(*([(0, 0, 0)] * 31 + [(255, 255, 255)]))
+        self.assertEqual(screen_color(data, 32, 1, 1), (16, 16, 16))
+
+    def test_small_color_on_black_is_dimmed_without_changing_hue(self):
+        data = pixels(*([(0, 0, 0)] * 31 + [(255, 0, 0)]))
+        self.assertEqual(screen_color(data, 32, 1, 1), (16, 0, 0))
+
+    def test_near_black_scene_turns_off(self):
+        self.assertEqual(screen_color(pixels((5, 5, 5)), 1, 1, 1), (0, 0, 0))
+
     def test_dominant_hue_does_not_average_complementary_colors(self):
         data = pixels((255, 0, 0), (255, 0, 0), (0, 255, 255))
         self.assertEqual(screen_color(data, 3, 1, 1), (255, 0, 0))
