@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ps4-lightbar-screen-sync"
+version = "0.1.0"
+description = "Sync a DualShock 4 light bar with your screen colors"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["mss>=10,<11", "pygame-ce>=2.5.6,<3"]
+
+[project.scripts]
+ds4sync = "lightbar:main"
+
+[project.urls]
+Repository = "https://github.com/DhanwanthParameswar/ps4-lightbar-screen-sync"
+
+[tool.setuptools]
+py-modules = ["lightbar"]

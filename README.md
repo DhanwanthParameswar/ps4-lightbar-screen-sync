@@ -10,7 +10,7 @@ Warm sunsets glow orange. Underwater scenes glow blue. Dark scenes fade out. Thi
 
 ## First prototype
 
-- One Python script, two dependencies, no browser shell, server, accounts, or telemetry.
+- Installable `ds4sync` CLI, two dependencies, no browser shell, server, accounts, or telemetry.
 - Dominant hue from a grid of up to 576 sampled pixels, ignoring near-black letterbox bars.
 - Time-based smoothing, adjustable brightness, 15 updates/second by default.
 - SDL handles controller transport; USB is the recommended first hardware test. Bluetooth still needs validation.
@@ -19,25 +19,40 @@ Warm sunsets glow orange. Underwater scenes glow blue. Dark scenes fade out. Thi
 
 This is an initial, unbenchmarked prototype. The color pipeline has automated tests; real controller output, Bluetooth behavior, and OS-specific capture permissions still need hardware testing. Sampling is sparse, but the current capture backend still grabs the whole selected monitor each frame. Low CPU and memory usage are goals, not measured claims.
 
-## Run
+## Install
 
-Python 3.9+:
+Requires Python 3.9+ and [pipx](https://pipx.pypa.io/). On macOS, install pipx with `brew install pipx` if needed.
 
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python lightbar.py --preview
+pipx install git+https://github.com/DhanwanthParameswar/ps4-lightbar-screen-sync.git
+pipx ensurepath
 ```
 
-On Windows activate with `.venv\Scripts\activate` instead.
+Open a new terminal after `ensurepath`. The command works from any directory without activating a virtual environment. Python remains the implementation language; pipx manages its isolated environment.
 
-Connect a DualShock 4 to **this computer**, initially over USB:
+## Run
+
+Pair your DualShock 4 with **this computer** over Bluetooth, or connect over USB. Bluetooth still needs hardware validation; USB is a useful fallback.
 
 ```sh
-python lightbar.py --list
-python lightbar.py
-python lightbar.py --controller 0 --brightness 0.5 --fade-ms 220 --fps 15
+ds4sync
+```
+
+Other options:
+
+```sh
+ds4sync --list
+ds4sync --controller 0 --brightness 0.5 --fade-ms 220 --fps 15
+ds4sync --preview
+ds4sync --help
+ds4sync --version
+```
+
+Update or uninstall:
+
+```sh
+pipx upgrade ps4-lightbar-screen-sync
+pipx uninstall ps4-lightbar-screen-sync
 ```
 
 Use `--monitor 2` for another monitor. `--help` lists all options. Ctrl+C stops the app and makes a best-effort attempt to turn the light bar off; the prior LED color is not restored. A disconnected controller requires restarting the script.
@@ -60,6 +75,17 @@ Use `--monitor 2` for another monitor. `--help` lists all options. Ctrl+C stops 
 4. Package a small tray/menu-bar app with one start/stop switch and brightness control.
 
 ## Develop
+
+Install from a checkout:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+ds4sync --help
+```
+
+On Windows activate with `.venv\Scripts\activate` instead.
 
 The color tests need only the Python standard library:
 
